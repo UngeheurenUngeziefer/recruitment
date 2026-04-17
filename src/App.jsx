@@ -14,9 +14,11 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 function App() {
+  const routerBase = import.meta.env.BASE_URL || '/';
+
   return (
     <QueryClientProvider client={queryClientInstance}>
-      <Router>
+      <Router basename={routerBase}>
         <Routes>
           <Route path="/" element={
             <LayoutWrapper currentPageName={mainPageKey}>

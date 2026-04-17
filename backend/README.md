@@ -1,6 +1,6 @@
 # Recruitment Backend (Flask)
 
-Minimal backend scaffold for future database integration.
+Minimal backend scaffold for API and future database integration.
 
 ## Run locally
 
@@ -13,13 +13,22 @@ Minimal backend scaffold for future database integration.
 4. Run app:
    python app.py
 
-Backend will run on port 8000.
+Backend will run on port 5007.
 
-## Production (example)
+## Production (recommended)
 
-Use gunicorn behind Apache/Nginx reverse proxy:
+Run Gunicorn behind Apache reverse proxy:
 
-gunicorn -w 2 -b 127.0.0.1:8000 app:app
+```bash
+gunicorn -c gunicorn.conf.py wsgi:app
+```
+
+With Apache routing:
+
+- Frontend static app: `/recruitment/`
+- Backend API proxy: `/recruitment/api/` -> `http://127.0.0.1:5007/api/`
+
+This keeps Apache stable while backend endpoints evolve.
 
 ## API endpoints
 

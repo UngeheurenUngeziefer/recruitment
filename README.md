@@ -1,39 +1,32 @@
-**Welcome to your Base44 project** 
+# Recruitment
 
-**About**
+Frontend is a Vite + React single-page app.
+Backend is a small Flask service intended for future API and database work.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## Local frontend
 
-This project contains everything you need to run your app locally.
+1. Install dependencies:
 
-**Edit the code in your local development environment**
-
-Any change pushed to the repo will also be reflected in the Base44 Builder.
-
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+```bash
+npm install
 ```
 
-Run the app: `npm run dev`
+2. Start the frontend:
 
-**Publish your changes**
+```bash
+npm run dev
+```
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+Optional base path for local verification:
 
-**Docs & Support**
+```bash
+VITE_APP_BASE_PATH=/recruitment/ npm run build
+```
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+## Local backend
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+See [backend/README.md](backend/README.md).
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Apache, frontend deploy, and backend service setup.

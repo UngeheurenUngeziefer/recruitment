@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
-  APP_PORT: "5007"
+  NODE_VERSION: "24"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   build:
@@ -28,8 +28,7 @@ jobs:
 
       - name: Build app
         env:
-          VITE_BASE44_APP_ID: ${{ secrets.VITE_BASE44_APP_ID }}
-          VITE_BASE44_APP_BASE_URL: ${{ secrets.VITE_BASE44_APP_BASE_URL }}
+          VITE_APP_BASE_PATH: ${{ secrets.VITE_APP_BASE_PATH }}
         run: npm run build
 
       - name: Create deploy archive
@@ -62,21 +61,52 @@ jobs:
         run: |
           scp -i ~/.ssh/id_rsa_deploy dist.tar.gz "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/recruitment-dist.tar.gz"
 
-      - name: Deploy dist only
+      - name: Deploy dist to Apache web root
         run: |
           ssh -i ~/.ssh/id_rsa_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'bash -s' << 'EOF'
           set -euo pipefail
 
           DEPLOY_ROOT="${{ secrets.VPS_DEPLOY_ROOT }}"
-          RELEASE_DIR="${DEPLOY_ROOT}/dist"
+          WEB_ROOT="${{ secrets.VPS_WEB_ROOT }}"
+          APP_BASE_PATH="${{ secrets.VITE_APP_BASE_PATH }}"
+          if [ -z "${WEB_ROOT}" ]; then
+            WEB_ROOT="${DEPLOY_ROOT}/dist"
+          fi
+          if [ -z "${APP_BASE_PATH}" ]; then
+            APP_BASE_PATH="/"
+          fi
+          case "${APP_BASE_PATH}" in
+            */) ;;
+            *) APP_BASE_PATH="${APP_BASE_PATH}/" ;;
+          esac
           TMP_ARCHIVE="/tmp/recruitment-dist.tar.gz"
+          TMP_DIR="/tmp/recruitment-dist"
 
-          mkdir -p "${DEPLOY_ROOT}"
-          rm -rf "${RELEASE_DIR}"
-          mkdir -p "${RELEASE_DIR}"
-          tar -xzf "${TMP_ARCHIVE}" -C "${DEPLOY_ROOT}"
+          rm -rf "${TMP_DIR}"
+          mkdir -p "${TMP_DIR}"
+          tar -xzf "${TMP_ARCHIVE}" -C "${TMP_DIR}"
+
+          mkdir -p "${WEB_ROOT}"
+          case "${WEB_ROOT}" in
+            /var/www/*) ;;
+            *) echo "Refusing to deploy outside /var/www: ${WEB_ROOT}"; exit 1 ;;
+          esac
+          rm -rf "${WEB_ROOT:?}"/*
+          cp -a "${TMP_DIR}/dist/." "${WEB_ROOT}/"
+
+          cat > "${WEB_ROOT}/.htaccess" << 'HTACCESS'
+          RewriteEngine On
+          RewriteBase __APP_BASE_PATH__
+          RewriteCond %{REQUEST_FILENAME} -f [OR]
+          RewriteCond %{REQUEST_FILENAME} -d
+          RewriteRule ^ - [L]
+          RewriteRule . __APP_BASE_PATH__index.html [L]
+          HTACCESS
+          sed -i "s|__APP_BASE_PATH__|${APP_BASE_PATH}|g" "${WEB_ROOT}/.htaccess"
+
+          rm -rf "${TMP_DIR}"
           rm -f "${TMP_ARCHIVE}"
 
-          echo "Deployment complete. Dist files are updated for port ${{ env.APP_PORT }}."
-          echo "Run Apache reload manually after server config changes."
+          echo "Deployment complete. Static files copied to ${WEB_ROOT}."
+          echo "If Apache vhost changed, run: sudo systemctl reload apache2"
           EOF

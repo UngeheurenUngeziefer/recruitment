@@ -1,0 +1,110 @@
+name: Deploy Recruitment Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - .github/workflows/deploy-backend.yml
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare backend archive
+        run: tar -czf backend.tar.gz backend
+
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa_deploy
+          chmod 600 ~/.ssh/id_rsa_deploy
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload backend archive to VPS
+        run: |
+          scp -i ~/.ssh/id_rsa_deploy backend.tar.gz "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/recruitment-backend.tar.gz"
+
+      - name: Deploy backend and restart service
+        run: |
+          ssh -i ~/.ssh/id_rsa_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'bash -s' << 'EOF'
+          set -euo pipefail
+
+          APP_ROOT="${{ secrets.VPS_APP_ROOT }}"
+          if [ -z "${APP_ROOT}" ]; then
+            APP_ROOT="/opt/recruitment"
+          fi
+
+          SERVICE_NAME="${{ secrets.VPS_BACKEND_SERVICE_NAME }}"
+          if [ -z "${SERVICE_NAME}" ]; then
+            SERVICE_NAME="recruitment-backend"
+          fi
+
+          SERVICE_USER="${{ secrets.VPS_BACKEND_SERVICE_USER }}"
+          if [ -z "${SERVICE_USER}" ]; then
+            SERVICE_USER="www-data"
+          fi
+
+          SERVICE_GROUP="${{ secrets.VPS_BACKEND_SERVICE_GROUP }}"
+          if [ -z "${SERVICE_GROUP}" ]; then
+            SERVICE_GROUP="www-data"
+          fi
+
+          TMP_ARCHIVE="/tmp/recruitment-backend.tar.gz"
+          TMP_DIR="/tmp/recruitment-backend"
+          VENV_DIR="${APP_ROOT}/.venv"
+          BACKEND_DIR="${APP_ROOT}/backend"
+          UNIT_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+
+          rm -rf "${TMP_DIR}"
+          mkdir -p "${TMP_DIR}"
+          tar -xzf "${TMP_ARCHIVE}" -C "${TMP_DIR}"
+
+          mkdir -p "${APP_ROOT}"
+          rm -rf "${BACKEND_DIR}"
+          cp -a "${TMP_DIR}/backend" "${BACKEND_DIR}"
+
+          if [ ! -d "${VENV_DIR}" ]; then
+            python3 -m venv "${VENV_DIR}"
+          fi
+
+          "${VENV_DIR}/bin/pip" install --upgrade pip
+          "${VENV_DIR}/bin/pip" install -r "${BACKEND_DIR}/requirements.txt"
+
+          sudo tee "${UNIT_FILE}" > /dev/null <<UNIT
+          [Unit]
+          Description=Recruitment Backend (Gunicorn)
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=${SERVICE_USER}
+          Group=${SERVICE_GROUP}
+          WorkingDirectory=${BACKEND_DIR}
+          Environment="PATH=${VENV_DIR}/bin"
+          ExecStart=${VENV_DIR}/bin/gunicorn -c ${BACKEND_DIR}/gunicorn.conf.py wsgi:app
+          Restart=always
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+          UNIT
+
+          rm -rf "${TMP_DIR}"
+          rm -f "${TMP_ARCHIVE}"
+
+          sudo systemctl daemon-reload
+          sudo systemctl enable --now "${SERVICE_NAME}"
+          sudo systemctl restart "${SERVICE_NAME}"
+          sudo systemctl is-active --quiet "${SERVICE_NAME}"
+
+          echo "Backend deployed to ${BACKEND_DIR} and service ${SERVICE_NAME} restarted."
+          EOF

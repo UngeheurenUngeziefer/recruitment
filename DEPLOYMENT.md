@@ -16,8 +16,8 @@ ProxyPass /recruitment !
 ProxyPass /recruitment/ !
 
 # Serve frontend static files from Apache
-Alias /recruitment/ /var/www/wlkbl.com/recruitment/
-<Directory /var/www/wlkbl.com/recruitment/>
+Alias /recruitment/ /home/github_actions_user/recruitment/frontend/
+<Directory /home/github_actions_user/recruitment/frontend/>
     Options FollowSymLinks
     AllowOverride All
     Require all granted
@@ -76,8 +76,7 @@ Frontend workflow (`.github/workflows/build-upload-run.yml`):
 - `VPS_SSH_PRIVATE_KEY`
 - `VPS_HOST`
 - `VPS_USER`
-- `VPS_DEPLOY_ROOT` (optional fallback)
-- `VPS_WEB_ROOT=/var/www/wlkbl.com/recruitment`
+- `VPS_WEB_ROOT=/home/github_actions_user/recruitment/frontend`
 - `VITE_APP_BASE_PATH=/recruitment/`
 
 Backend workflow (`.github/workflows/deploy-backend.yml`):

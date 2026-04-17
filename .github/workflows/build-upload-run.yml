@@ -66,11 +66,12 @@ jobs:
           ssh -i ~/.ssh/id_rsa_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'bash -s' << 'EOF'
           set -euo pipefail
 
+          DEPLOY_USER="$(whoami)"
           DEPLOY_ROOT="${{ secrets.VPS_DEPLOY_ROOT }}"
           WEB_ROOT="${{ secrets.VPS_WEB_ROOT }}"
           APP_BASE_PATH="${{ secrets.VITE_APP_BASE_PATH }}"
           if [ -z "${WEB_ROOT}" ]; then
-            WEB_ROOT="${DEPLOY_ROOT}/dist"
+            WEB_ROOT="/home/${DEPLOY_USER}/recruitment/frontend"
           fi
           if [ -z "${APP_BASE_PATH}" ]; then
             APP_BASE_PATH="/"
@@ -87,10 +88,6 @@ jobs:
           tar -xzf "${TMP_ARCHIVE}" -C "${TMP_DIR}"
 
           mkdir -p "${WEB_ROOT}"
-          case "${WEB_ROOT}" in
-            /var/www/*) ;;
-            *) echo "Refusing to deploy outside /var/www: ${WEB_ROOT}"; exit 1 ;;
-          esac
           rm -rf "${WEB_ROOT:?}"/*
           cp -a "${TMP_DIR}/dist/." "${WEB_ROOT}/"
 

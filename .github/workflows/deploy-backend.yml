@@ -40,7 +40,7 @@ jobs:
 
           APP_ROOT="${{ secrets.VPS_APP_ROOT }}"
           if [ -z "${APP_ROOT}" ]; then
-            APP_ROOT="/opt/recruitment"
+            APP_ROOT="${HOME}/recruitment"
           fi
 
           SERVICE_NAME="${{ secrets.VPS_BACKEND_SERVICE_NAME }}"
@@ -64,11 +64,23 @@ jobs:
           BACKEND_DIR="${APP_ROOT}/backend"
           UNIT_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 
+          DEPLOY_USER="$(whoami)"
+
           rm -rf "${TMP_DIR}"
           mkdir -p "${TMP_DIR}"
           tar -xzf "${TMP_ARCHIVE}" -C "${TMP_DIR}"
 
-          mkdir -p "${APP_ROOT}"
+          if ! mkdir -p "${APP_ROOT}" 2>/dev/null; then
+            if command -v sudo >/dev/null 2>&1; then
+              sudo mkdir -p "${APP_ROOT}"
+              sudo chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${APP_ROOT}"
+            else
+              echo "Cannot write APP_ROOT=${APP_ROOT} and sudo is unavailable."
+              echo "Set VPS_APP_ROOT to a writable path, for example: /home/${DEPLOY_USER}/recruitment"
+              exit 1
+            fi
+          fi
+
           rm -rf "${BACKEND_DIR}"
           cp -a "${TMP_DIR}/backend" "${BACKEND_DIR}"
 

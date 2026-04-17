@@ -84,8 +84,11 @@ Backend workflow (`.github/workflows/deploy-backend.yml`):
 - `VPS_SSH_PRIVATE_KEY`
 - `VPS_HOST`
 - `VPS_USER`
-- `VPS_APP_ROOT=/opt/recruitment`
+- `VPS_APP_ROOT` (recommended: `/home/<VPS_USER>/recruitment`; example: `/home/github_actions_user/recruitment`)
 - `VPS_BACKEND_SERVICE_NAME=recruitment-backend`
+
+If `VPS_APP_ROOT` points to a protected path like `/opt/recruitment`, the workflow will try `sudo mkdir/chown`.
+If your deploy user has no sudo rights, use a writable home-directory path instead.
 
 ## 4. Deploy Flow (No Further Apache Edits)
 

@@ -4,6 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import BlogPost from './pages/BlogPost';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -36,6 +37,7 @@ function App() {
               }
             />
           ))}
+          <Route path="/Blog/:slug" element={<BlogPost />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>

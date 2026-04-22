@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Users, BarChart3, Lightbulb, ArrowRight, Check } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const services = [
   {
@@ -15,6 +17,7 @@ const services = [
       "Recruitment in hours, not weeks",
     ],
     accent: "blue",
+    blogSlug: "recruiting-b2b-respondents-how-to-do-it-right",
   },
   {
     icon: BarChart3,
@@ -28,6 +31,7 @@ const services = [
       "Scalable sample sizes",
     ],
     accent: "indigo",
+    blogSlug: "interviews-vs-surveys-right-method",
   },
   {
     icon: Lightbulb,
@@ -41,13 +45,14 @@ const services = [
       "Actionable insights & reports",
     ],
     accent: "violet",
+    blogSlug: "outsourcing-recruitment-common-mistakes",
   },
 ];
 
 const accentMap = {
-  blue: { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-100", badge: "bg-blue-100 text-blue-700" },
-  indigo: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-100", badge: "bg-indigo-100 text-indigo-700" },
-  violet: { bg: "bg-violet-50", text: "text-violet-600", border: "border-violet-100", badge: "bg-violet-100 text-violet-700" },
+  blue: { bg: "bg-blue-50", text: "text-blue-600", badge: "bg-blue-100 text-blue-700" },
+  indigo: { bg: "bg-indigo-50", text: "text-indigo-600", badge: "bg-indigo-100 text-indigo-700" },
+  violet: { bg: "bg-violet-50", text: "text-violet-600", badge: "bg-violet-100 text-violet-700" },
 };
 
 export default function ServicesSection() {
@@ -93,9 +98,12 @@ export default function ServicesSection() {
                   ))}
                 </ul>
                 <div className="mt-6 pt-5 border-t border-gray-50">
-                  <a href="#" className={`inline-flex items-center text-sm font-semibold ${colors.text} group-hover:gap-2 transition-all`}>
-                    Learn more <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </a>
+                  <Link
+                    to={`${createPageUrl("Blog")}/${service.blogSlug}`}
+                    className={`inline-flex items-center text-sm font-semibold ${colors.text} group-hover:gap-2 transition-all`}
+                  >
+                    Read more <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </Link>
                 </div>
               </motion.div>
             );

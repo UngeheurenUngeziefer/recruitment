@@ -10,7 +10,7 @@ export default function QuoteSection() {
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left copy */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -27,16 +27,16 @@ export default function QuoteSection() {
                 before you commit
               </span>
             </h2>
-            <p className="mt-4 text-gray-500 text-lg leading-relaxed">
-              No sales calls needed. Configure your study in 4 steps and get a real estimate in seconds.
-            </p>
+              <p className="mt-4 text-gray-500 text-lg leading-relaxed">
+                Configure your project, get a live estimate for quantitative studies, and submit your request directly.
+              </p>
 
             <div className="mt-8 space-y-4">
-              {[
-                { label: "Transparent pricing", desc: "No hidden fees or surprise costs" },
-                { label: "Accurate timelines", desc: "Based on real recruitment data" },
-                { label: "Instant response", desc: "Detailed proposal within 1 hour" },
-              ].map((item) => (
+                {[
+                  { label: "B2B flow simplified", desc: "Single final step with direct request submission" },
+                  { label: "Quant pricing logic", desc: "Country-based rates and dynamic total estimate" },
+                  { label: "Stable calculator layout", desc: "Fixed widget height with no step-jumping UI" },
+                ].map((item) => (
                 <div key={item.label} className="flex items-start gap-3">
                   <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <div className="w-2 h-2 rounded-full bg-blue-600" />

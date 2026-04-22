@@ -10,6 +10,7 @@ import UseCasesSection from "../components/landing/UseCasesSection";
 import FAQSection from "../components/landing/FAQSection";
 import CTASection from "../components/landing/CTASection";
 import Footer from "../components/landing/Footer";
+import ParticipantsPhotosSection from "../components/landing/ParticipantsPhotosSection";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <IndustriesBar />
       <ServicesSection />
       <HowItWorksSection />
+      <ParticipantsPhotosSection />
       <AudienceSection />
       <WhyUsSection />
       <UseCasesSection />

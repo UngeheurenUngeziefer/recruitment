@@ -49,14 +49,22 @@ const COUNTRY_RATES = [
   },
 ];
 
+const DEFAULT_COUNTRY_RATE = {
+  label: "India, Brazil, Africa, etc.",
+  countries: [],
+  min: 0.5,
+  max: 1,
+};
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const roundOneDecimal = (value) => Math.round(value * 10) / 10;
 
-const formatMoney = (value) =>
-  value % 1 === 0
-    ? `$${value.toLocaleString()}`
-    : `$${value.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
+const formatMoney = (value) => {
+  const formatted = value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+  return `$${formatted.replace(/\.0$/, "")}`;
+};
 
-const getCountryRate = (country) => COUNTRY_RATES.find((group) => group.countries.includes(country)) ?? COUNTRY_RATES[3];
+const getCountryRate = (country) => COUNTRY_RATES.find((group) => group.countries.includes(country)) ?? DEFAULT_COUNTRY_RATE;
 
 function StepType({ value, onChange }) {
   return (
@@ -298,8 +306,8 @@ export default function QuoteCalculator() {
     if (!state.responses || !state.country) return null;
     const rate = getCountryRate(state.country);
     return {
-      minTotal: Number((state.responses * rate.min).toFixed(1)),
-      maxTotal: Number((state.responses * rate.max).toFixed(1)),
+      minTotal: roundOneDecimal(state.responses * rate.min),
+      maxTotal: roundOneDecimal(state.responses * rate.max),
     };
   }, [state.responses, state.country]);
 
@@ -307,12 +315,12 @@ export default function QuoteCalculator() {
   const b2bFlow = ["Respondent Type", "Final Step"];
   const steps = state.type === "B2C" ? b2cFlow : b2bFlow;
 
-  const contentCanContinue = {
-    0: Boolean(state.type),
-    1:
-      state.type === "B2B"
-        ? Boolean(state.audienceGoals.trim())
-        : Boolean(state.responses > 0 && state.country),
+  const canContinue = () => {
+    if (step === 0) return Boolean(state.type);
+    if (state.type === "B2B" && step === 1) return Boolean(state.audienceGoals.trim());
+    if (state.type === "B2C" && step === 1) return Boolean(state.responses > 0 && state.country);
+    if (state.type === "B2C" && step === 2) return Boolean(state.email.trim() && EMAIL_REGEX.test(state.email));
+    return false;
   };
 
   const setField = (key, value) => {
@@ -356,7 +364,7 @@ export default function QuoteCalculator() {
     setSubmitted(true);
   };
 
-  const isLastStepBeforeSubmit = (state.type === "B2B" && step === 1) || (state.type === "B2C" && step === 2);
+  const isSubmitStep = Boolean(state.type) && step === steps.length - 1;
 
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl shadow-gray-100/60 overflow-hidden h-[680px] flex flex-col">
@@ -453,7 +461,7 @@ export default function QuoteCalculator() {
             <ChevronLeft className="w-4 h-4 mr-1" /> Back
           </Button>
 
-          {isLastStepBeforeSubmit ? (
+          {isSubmitStep ? (
             <Button
               size="sm"
               onClick={validateAndSubmit}
@@ -466,7 +474,7 @@ export default function QuoteCalculator() {
             <Button
               size="sm"
               onClick={() => setStep((current) => current + 1)}
-              disabled={!contentCanContinue[step]}
+              disabled={!canContinue()}
               className="bg-blue-600 hover:bg-blue-700 px-6 rounded-full disabled:opacity-40"
             >
               Continue

@@ -65,7 +65,7 @@ export default function BlogPost() {
             {relatedArticles.map((related) => (
               <Link
                 key={related.slug}
-                to={`/Blog/${related.slug}`}
+                to={`${createPageUrl("Blog")}/${related.slug}`}
                 className="group rounded-xl border border-gray-100 p-4 hover:border-blue-100 hover:bg-blue-50/30 transition-all"
               >
                 <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">{related.category}</p>

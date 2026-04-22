@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Users, BarChart3, Lightbulb, ArrowRight, Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const services = [
   {
@@ -98,7 +99,7 @@ export default function ServicesSection() {
                 </ul>
                 <div className="mt-6 pt-5 border-t border-gray-50">
                   <Link
-                    to={`/Blog/${service.blogSlug}`}
+                    to={`${createPageUrl("Blog")}/${service.blogSlug}`}
                     className={`inline-flex items-center text-sm font-semibold ${colors.text} group-hover:gap-2 transition-all`}
                   >
                     Read more <ArrowRight className="w-3.5 h-3.5 ml-1" />

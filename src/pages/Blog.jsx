@@ -50,7 +50,7 @@ export default function Blog() {
               className="group flex flex-col"
             >
               <Link
-                to={`/Blog/${post.slug}`}
+                to={`${createPageUrl("Blog")}/${post.slug}`}
                 className="flex-1 bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-100 hover:shadow-lg hover:shadow-blue-50/50 transition-all duration-300"
               >
                 <span className="inline-block text-[11px] font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full mb-4">
